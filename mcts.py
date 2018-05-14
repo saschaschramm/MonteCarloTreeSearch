@@ -19,7 +19,6 @@ class MonteCarloTreeSearch():
         return child
 
     def default_policy(self, state):
-
         if state == 15:
             return 1.0
 
@@ -68,10 +67,11 @@ class MonteCarloTreeSearch():
 
     def _forward(self,node):
         best_child = self.best_child(node, exploration_constant=0)
-        print("******** state ", best_child.state)
+
+        print("****** {} ******".format(best_child.state))
 
         for child in self.tree.children(best_child):
-            print("{} -> {}".format(child.state, child.performance))
+            print("{}: {:0.4f}".format(child.state, child.performance))
 
         if len(self.tree.children(best_child)) > 0:
             self._forward(best_child)
