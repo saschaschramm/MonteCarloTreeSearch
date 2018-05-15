@@ -1,20 +1,19 @@
 from utilities.tree import Tree
-from utilities.env_wrapper import EnvWrapper
 import random
 from math import sqrt, log
 from utilities.node import Node
 
 class MonteCarloTreeSearch():
 
-    def __init__(self):
-        self.env = EnvWrapper()
+    def __init__(self, env):
+        self.env = env
         self.tree = Tree()
-        self.tree.add_node(Node(state = 0))
-        random.seed(1)
+        self.tree.add_node(Node(state=0))
 
     def expand(self, parent):
-        step = self.env.step_with_state(parent.state, parent.action())
-        child = Node(state = step.state)
+        action = parent.untried_action()
+        step = self.env.step_with_state(parent.state, action)
+        child = Node(state=step.state, action=action)
         self.tree.add_node(child, parent)
         return child
 
@@ -30,8 +29,9 @@ class MonteCarloTreeSearch():
             state = step.state
 
     def compute_value(self, parent, child, exploration_constant):
-        return child.total_simulation_reward / child.num_visits + exploration_constant * \
-        sqrt(2 * log(parent.num_visits) / child.num_visits)
+        exploitation_term = child.total_simulation_reward / child.num_visits
+        exploration_term = exploration_constant * sqrt(2 * log(parent.num_visits) / child.num_visits)
+        return exploitation_term + exploration_term
 
     def best_child(self, node, exploration_constant):
         best_child = self.tree.children(node)[0]
