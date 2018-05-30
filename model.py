@@ -1,32 +1,32 @@
-from utilities.tree import Tree
 import random
 from math import sqrt, log
 from utilities.node import Node
 
 class MonteCarloTreeSearch():
 
-    def __init__(self, env):
+    def __init__(self, env, tree):
         self.env = env
-        self.tree = Tree()
-        self.tree.add_node(Node(state=0))
+        self.tree = tree
+        self.action_space = self.env.action_space.n
+        state = self.env.reset()
+        self.tree.add_node(Node(state=state, action=None, action_space=self.action_space, reward=0, terminal=False))
 
-    def expand(self, parent):
-        action = parent.untried_action()
-        step = self.env.step_with_state(parent.state, action)
-        child = Node(state=step.state, action=action)
-        self.tree.add_node(child, parent)
-        return child
+    def expand(self, node):
+        action = node.untried_action()
+        state, reward, done, _ = self.env.step(action)
+        new_node = Node(state=state, action=action, action_space=self.action_space, reward=reward, terminal=done)
+        self.tree.add_node(new_node, node)
+        return new_node
 
-    def default_policy(self, state):
-        if state == 15:
-            return 1.0
+    def default_policy(self, node):
+        if node.terminal:
+            return node.reward
 
         while True:
-            action = random.randint(0, 3)
-            step = self.env.step_with_state(state, action)
-            if step.done:
-                return step.reward
-            state = step.state
+            action = random.randint(0, self.action_space-1)
+            state, reward, done, _ = self.env.step(action)
+            if done:
+                return reward
 
     def compute_value(self, parent, child, exploration_constant):
         exploitation_term = child.total_simulation_reward / child.num_visits
@@ -43,16 +43,17 @@ class MonteCarloTreeSearch():
             if value > best_value:
                 best_child = child
                 best_value = value
-
         return best_child
 
     def tree_policy(self):
         node = self.tree.root
-        while not node.is_terminal():
-            if node.is_expandable():
+        while not node.terminal:
+            if self.tree.is_expandable(node):
                 return self.expand(node)
             else:
                 node = self.best_child(node, exploration_constant=1.0/sqrt(2.0))
+                state, reward, done, _ = self.env.step(node.action)
+                assert node.state == state
         return node
 
     def backward(self, node, value):

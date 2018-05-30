@@ -7,7 +7,7 @@ The implementation is based on [A Survey of Monte Carlo Tree Search Methods](htt
 
 ## Environment
 
-We use FrozenLake as an environment. The agent starts at S with the goal to move to G. The agent can walk over the 
+We apply MCTS to a deterministic variant of the FrozenLake environment. In this environment the agent starts at S with the goal to move to G. The agent can walk over the 
 frozen surface F and needs to avoid holes H:
 
 ![grid states](images/grid_states.png).

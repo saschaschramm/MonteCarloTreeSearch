@@ -23,6 +23,13 @@ class Tree:
         self.nodes = {}
         self.root = None
 
+    def is_expandable(self, node):
+        if node.terminal:
+            return False
+        if len(node.untried_actions) > 0:
+            return True
+        return False
+
     def iter(self, identifier, depth, last_node_flags):
         if identifier is None:
             node = self.root
